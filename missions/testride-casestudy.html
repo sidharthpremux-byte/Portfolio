@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MISSION_04 // Test Ride Flow — Sidharth Premanand</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;900&family=JetBrains+Mono:wght@300;400;500&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cyan: #00E5FF;
+    --cyan-dim: rgba(0,229,255,0.12);
+    --cyan-border: rgba(0,229,255,0.25);
+    --magenta: #FF006E;
+    --white: #F0F0F0;
+    --grey: #888;
+    --grey-dim: #444;
+    --bg: #080808;
+    --bg-card: #0f0f0f;
+    --bg-raised: #141414;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  ::selection { background: var(--cyan); color: #000; }
+
+  /* CUSTOM CURSOR */
+  * { cursor: none; }
+  #cursor-dot {
+    position: fixed; width: 8px; height: 8px;
+    background: var(--cyan); border-radius: 50%;
+    pointer-events: none; z-index: 9999;
+    transform: translate(-50%, -50%);
+    transition: transform 0.1s ease;
+  }
+  #cursor-ring {
+    position: fixed; width: 32px; height: 32px;
+    border: 1px solid rgba(0,229,255,0.4); border-radius: 50%;
+    pointer-events: none; z-index: 9998;
+    transform: translate(-50%, -50%);
+    transition: width 0.3s ease, height 0.3s ease, opacity 0.3s ease, border-color 0.3s ease;
+  }
+  body:has(a:hover) #cursor-ring,
+  body:has(button:hover) #cursor-ring {
+    width: 48px; height: 48px; opacity: 0.5;
+    border-color: var(--cyan);
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--white);
+    font-family: 'Barlow', sans-serif;
+    font-weight: 300;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* NOISE TEXTURE */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 1000;
+    opacity: 0.4;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    padding: 18px 48px;
+    display: flex; justify-content: space-between; align-items: center;
+    background: rgba(8,8,8,0.8);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--cyan-border);
+    z-index: 500;
+  }
+  .nav-brand {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700; font-size: 15px;
+    letter-spacing: 0.08em; color: var(--white);
+    text-decoration: none;
+  }
+  .nav-right { display: flex; align-items: center; gap: 32px; }
+  .nav-status {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; color: var(--cyan);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .nav-status::before {
+    content: ''; width: 6px; height: 6px;
+    background: var(--cyan); border-radius: 50%;
+    animation: pulse-dot 1.5s ease-in-out infinite;
+  }
+  .nav-back {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; color: var(--grey);
+    text-decoration: none; letter-spacing: 0.05em;
+    transition: color 0.2s;
+  }
+  .nav-back:hover { color: var(--cyan); }
+
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  /* SCANLINE OVERLAY */
+  .scanlines {
+    position: fixed; inset: 0; pointer-events: none;
+    z-index: 999;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 3px,
+      rgba(0,0,0,0.04) 3px,
+      rgba(0,0,0,0.04) 4px
+    );
+  }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column; justify-content: flex-end;
+    padding: 0 80px 80px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-bg {
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse 60% 50% at 80% 40%, rgba(0,229,255,0.05) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 60% at 20% 60%, rgba(255,0,110,0.04) 0%, transparent 70%);
+  }
+
+  .hero-grid {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+
+  .hero-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; color: var(--cyan);
+    letter-spacing: 0.15em;
+    margin-bottom: 24px;
+    animation: fadeUp 0.8s ease forwards;
+    opacity: 0;
+  }
+
+  .hero-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: clamp(64px, 10vw, 128px);
+    line-height: 0.9;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+    animation: fadeUp 0.8s 0.15s ease forwards;
+    opacity: 0;
+  }
+
+  .hero-title .outline {
+    -webkit-text-stroke: 1px rgba(240,240,240,0.3);
+    color: transparent;
+  }
+
+  .hero-meta {
+    margin-top: 48px;
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    border: 1px solid var(--cyan-border);
+    background: var(--cyan-border);
+    animation: fadeUp 0.8s 0.3s ease forwards;
+    opacity: 0;
+  }
+
+  .meta-cell {
+    background: var(--bg); padding: 20px 24px;
+  }
+  .meta-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; color: var(--grey);
+    letter-spacing: 0.12em; margin-bottom: 8px;
+  }
+  .meta-value {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 600; font-size: 16px;
+    color: var(--white); letter-spacing: 0.03em;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* SECTIONS */
+  .section {
+    padding: 120px 80px;
+    position: relative;
+    opacity: 0; transform: translateY(32px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .section.visible { opacity: 1; transform: translateY(0); }
+
+  .section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; color: var(--cyan);
+    letter-spacing: 0.2em; margin-bottom: 16px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .section-label::after {
+    content: ''; flex: 1; height: 1px;
+    background: linear-gradient(90deg, var(--cyan-border), transparent);
+  }
+
+  .section-heading {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900; text-transform: uppercase;
+    font-size: clamp(40px, 5vw, 72px);
+    line-height: 0.95; letter-spacing: -0.02em;
+  }
+
+  /* DIVIDER */
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--cyan-border), transparent);
+    margin: 0 80px;
+  }
+
+  /* CONTEXT SECTION */
+  .context-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 80px; margin-top: 64px; align-items: start;
+  }
+
+  .context-text {
+    font-size: 18px; line-height: 1.7;
+    color: rgba(240,240,240,0.7);
+    font-weight: 300;
+  }
+
+  .context-data {
+    display: flex; flex-direction: column; gap: 1px;
+    border: 1px solid var(--cyan-border);
+    background: var(--cyan-border);
+  }
+
+  .data-row {
+    background: var(--bg-card);
+    padding: 20px 24px;
+    display: flex; justify-content: space-between;
+    align-items: center;
+  }
+  .data-key {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; color: var(--grey);
+    letter-spacing: 0.12em;
+  }
+  .data-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; color: var(--cyan);
+  }
+
+  /* PROBLEM SECTION */
+  .problems {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 1px; margin-top: 64px;
+    background: var(--cyan-border);
+    border: 1px solid var(--cyan-border);
+  }
+
+  .problem-card {
+    background: var(--bg-card);
+    padding: 40px 32px;
+    position: relative;
+    transition: background 0.3s ease;
+  }
+  .problem-card:hover { background: var(--bg-raised); }
+
+  .problem-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; color: var(--cyan);
+    letter-spacing: 0.15em; margin-bottom: 24px;
+  }
+
+  .problem-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700; font-size: 22px;
+    text-transform: uppercase; letter-spacing: 0.03em;
+    margin-bottom: 16px; color: var(--white);
+  }
+
+  .problem-body {
+    font-size: 14px; line-height: 1.7;
+    color: rgba(240,240,240,0.55); font-weight: 300;
+  }
+
+  .problem-card::after {
+    content: ''; position: absolute;
+    bottom: 0; left: 0; right: 0; height: 2px;
+    background: var(--cyan);
+    transform: scaleX(0); transform-origin: left;
+    transition: transform 0.4s ease;
+  }
+  .problem-card:hover::after { transform: scaleX(1); }
+
+  /* FINDINGS */
+  .findings-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 1px; margin-top: 64px;
+    background: var(--cyan-border);
+    border: 1px solid var(--cyan-border);
+  }
+
+  .finding-card {
+    background: var(--bg-card);
+    padding: 64px 48px;
+    display: flex; flex-direction: column;
+    gap: 16px;
+    transition: background 0.3s;
+  }
+  .finding-card:hover { background: var(--bg-raised); }
+
+  .finding-num {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: clamp(72px, 10vw, 120px);
+    line-height: 1; color: var(--cyan);
+    -webkit-text-stroke: 2px var(--cyan);
+    letter-spacing: -0.03em;
+  }
+
+  .finding-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; color: var(--grey);
+    letter-spacing: 0.12em; line-height: 1.6;
+    max-width: 280px;
+  }
+
+  /* PROCESS TIMELINE */
+  .process-track {
+    margin-top: 64px;
+    position: relative;
+    padding-left: 32px;
+  }
+
+  .process-track::before {
+    content: ''; position: absolute;
+    left: 0; top: 12px; bottom: 12px;
+    width: 1px;
+    background: linear-gradient(180deg, var(--cyan), var(--cyan-border), transparent);
+  }
+
+  .process-step {
+    display: grid; grid-template-columns: 200px 1fr;
+    gap: 48px; padding: 40px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    position: relative;
+    transition: background 0.3s;
+  }
+
+  .process-step::before {
+    content: ''; position: absolute;
+    left: -36px; top: 44px;
+    width: 8px; height: 8px;
+    background: var(--bg); border: 1px solid var(--cyan);
+    border-radius: 50%;
+    transition: background 0.3s, box-shadow 0.3s;
+  }
+  .process-step:hover::before {
+    background: var(--cyan);
+    box-shadow: 0 0 12px var(--cyan);
+  }
+
+  .step-phase {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; color: var(--cyan);
+    letter-spacing: 0.15em; padding-top: 4px;
+    text-transform: uppercase;
+  }
+
+  .step-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700; font-size: 24px;
+    text-transform: uppercase; letter-spacing: 0.02em;
+    margin-bottom: 12px; color: var(--white);
+  }
+
+  .step-body {
+    font-size: 15px; line-height: 1.7;
+    color: rgba(240,240,240,0.55); font-weight: 300;
+  }
+
+  /* BEFORE / AFTER */
+  .ba-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 1px; margin-top: 64px;
+    background: var(--cyan-border);
+    border: 1px solid var(--cyan-border);
+  }
+
+  .ba-panel {
+    background: var(--bg-card);
+    padding: 48px 40px;
+  }
+
+  .ba-tag {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; letter-spacing: 0.15em;
+    padding: 4px 10px;
+    border: 1px solid;
+    margin-bottom: 32px;
+  }
+  .ba-tag.before { color: var(--grey); border-color: var(--grey-dim); }
+  .ba-tag.after { color: var(--cyan); border-color: var(--cyan); }
+
+  .ba-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700; font-size: 22px;
+    text-transform: uppercase; margin-bottom: 24px;
+  }
+
+  .ba-list { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+  .ba-list li {
+    font-size: 14px; line-height: 1.6;
+    color: rgba(240,240,240,0.6);
+    padding-left: 20px; position: relative;
+  }
+  .ba-list.before li::before { content: '—'; position: absolute; left: 0; color: var(--grey-dim); }
+  .ba-list.after li::before { content: '→'; position: absolute; left: 0; color: var(--cyan); }
+
+  /* RESULTS */
+  .results-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 1px; margin-top: 64px;
+    background: var(--cyan-border);
+    border: 1px solid var(--cyan-border);
+  }
+
+  .result-card {
+    background: var(--bg-card);
+    padding: 56px 40px;
+    position: relative; overflow: hidden;
+    transition: background 0.3s;
+  }
+  .result-card:hover { background: var(--bg-raised); }
+
+  .result-card::before {
+    content: ''; position: absolute;
+    top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+    opacity: 0; transition: opacity 0.4s;
+  }
+  .result-card:hover::before { opacity: 1; }
+
+  .result-index {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; color: var(--grey);
+    letter-spacing: 0.15em; margin-bottom: 24px;
+  }
+
+  .result-num {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: clamp(56px, 6vw, 88px);
+    line-height: 1; color: var(--white);
+    letter-spacing: -0.03em; margin-bottom: 16px;
+  }
+  .result-num span { color: var(--cyan); }
+
+  .result-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; color: var(--grey);
+    letter-spacing: 0.1em; line-height: 1.6;
+  }
+
+  .result-target {
+    margin-top: 24px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; color: rgba(0,229,255,0.5);
+    letter-spacing: 0.1em;
+  }
+
+  /* OBJECTIVE PILLS */
+  .objectives {
+    display: flex; flex-wrap: wrap; gap: 12px;
+    margin-top: 48px;
+  }
+  .obj-pill {
+    padding: 12px 20px;
+    border: 1px solid var(--cyan-border);
+    background: var(--cyan-dim);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; color: var(--cyan);
+    letter-spacing: 0.08em;
+    transition: background 0.3s, border-color 0.3s;
+  }
+  .obj-pill:hover {
+    background: rgba(0,229,255,0.2);
+    border-color: var(--cyan);
+  }
+
+  /* BACK CTA */
+  .cta-section {
+    padding: 120px 80px;
+    text-align: center;
+    position: relative;
+  }
+
+  .cta-bg {
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 50% 50%, rgba(0,229,255,0.04), transparent);
+    background-image:
+      linear-gradient(rgba(0,229,255,0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,255,0.02) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  .cta-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; color: var(--cyan);
+    letter-spacing: 0.2em; margin-bottom: 24px;
+  }
+
+  .cta-heading {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900; font-size: clamp(48px, 7vw, 96px);
+    text-transform: uppercase; line-height: 0.9;
+    letter-spacing: -0.02em; margin-bottom: 48px;
+  }
+
+  .cta-btn {
+    display: inline-flex; align-items: center; gap: 12px;
+    padding: 16px 36px;
+    background: transparent;
+    border: 1px solid var(--cyan);
+    color: var(--cyan);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; letter-spacing: 0.15em;
+    text-decoration: none;
+    position: relative; overflow: hidden;
+    transition: color 0.3s;
+  }
+  .cta-btn::before {
+    content: ''; position: absolute; inset: 0;
+    background: var(--cyan);
+    transform: translateX(-100%);
+    transition: transform 0.4s ease;
+  }
+  .cta-btn:hover::before { transform: translateX(0); }
+  .cta-btn:hover { color: #000; }
+  .cta-btn span { position: relative; z-index: 1; }
+
+  /* FOOTER LINE */
+  .footer-line {
+    padding: 24px 80px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .footer-copy {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; color: var(--grey);
+    letter-spacing: 0.1em;
+  }
+
+  /* GLITCH EFFECT */
+  @keyframes glitch {
+    0%, 100% { clip-path: none; transform: none; }
+    20% { clip-path: polygon(0 20%, 100% 20%, 100% 40%, 0 40%); transform: translateX(-3px); }
+    21% { clip-path: none; transform: none; }
+    40% { clip-path: polygon(0 60%, 100% 60%, 100% 80%, 0 80%); transform: translateX(3px); }
+    41% { clip-path: none; transform: none; }
+  }
+
+  .glitch-target {
+    position: relative;
+  }
+  .glitch-target::after {
+    content: attr(data-text);
+    position: absolute; inset: 0;
+    color: var(--cyan);
+    animation: glitch 8s ease-in-out infinite;
+    opacity: 0.15;
+  }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 2px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--cyan-border); }
+</style>
+</head>
+<body>
+
+<div id="cursor-dot"></div>
+<div id="cursor-ring"></div>
+<div class="scanlines"></div>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-brand">SIDHARTH PREMANAND</a>
+  <div class="nav-right">
+    <div class="nav-status">SYSTEM_STATUS: ACTIVE</div>
+    <a href="#" class="nav-back">← BACK TO MISSIONS</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+
+  <div class="hero-label">MISSION_04 // ATHER ENERGY // MOBILITY INTERFACE</div>
+
+  <h1 class="hero-title glitch-target" data-text="IMPROVING THE TEST RIDE FLOW">
+    IMPROVING<br>
+    THE TEST<br>
+    <span class="outline">RIDE FLOW</span>
+  </h1>
+
+  <div class="hero-meta">
+    <div class="meta-cell">
+      <div class="meta-label">CLIENT //</div>
+      <div class="meta-value">Ather Energy</div>
+    </div>
+    <div class="meta-cell">
+      <div class="meta-label">SCOPE //</div>
+      <div class="meta-value">UX Redesign + HTR</div>
+    </div>
+    <div class="meta-cell">
+      <div class="meta-label">PLATFORM //</div>
+      <div class="meta-value">Web + Mobile</div>
+    </div>
+    <div class="meta-cell">
+      <div class="meta-label">STATUS //</div>
+      <div class="meta-value" style="color: var(--cyan)">MISSION COMPLETE</div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- CONTEXT -->
+<div class="section" id="s1">
+  <div class="section-label">01 // MISSION_BRIEF</div>
+  <h2 class="section-heading">Context</h2>
+
+  <div class="context-grid">
+    <div class="context-text">
+      This mission covers the complete redesign of Ather Energy's online test ride booking system. The core intervention was the introduction of <strong style="color:var(--white)">Home Test Rides (HTR)</strong> — a first-of-its-kind feature that brought the test ride experience directly to the customer's location, removing the friction of visiting an Experience Centre.
+      <br><br>
+      The existing booking flow presented a fragmented, multi-step journey that required users to locate nearby ECs, navigate an unintuitive calendar system, and commit personal details before understanding availability — a sequence that drove high abandonment.
+    </div>
+
+    <div class="context-data">
+      <div class="data-row">
+        <span class="data-key">INITIAL TRB→TRD RATE</span>
+        <span class="data-val">3%</span>
+      </div>
+      <div class="data-row">
+        <span class="data-key">TARGET CONVERSION</span>
+        <span class="data-val">6%</span>
+      </div>
+      <div class="data-row">
+        <span class="data-key">USERS ABANDONING (EC LOCATION)</span>
+        <span class="data-val">40%</span>
+      </div>
+      <div class="data-row">
+        <span class="data-key">DROP-OFF AT INITIAL STAGES</span>
+        <span class="data-val">25%</span>
+      </div>
+      <div class="data-row">
+        <span class="data-key">HTR PILOT TARGET</span>
+        <span class="data-val">NEW FEATURE</span>
+      </div>
+      <div class="data-row">
+        <span class="data-key">USER TESTING PARTICIPANTS</span>
+        <span class="data-val">15 USERS</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- PROBLEM -->
+<div class="section" id="s2">
+  <div class="section-label">02 // PROBLEM_STATEMENT</div>
+  <h2 class="section-heading">What Was<br>Broken</h2>
+
+  <div class="problems">
+    <div class="problem-card">
+      <div class="problem-num">FAULT_01 //</div>
+      <div class="problem-title">Complex Booking Flow</div>
+      <div class="problem-body">The existing booking sequence was lengthy and cognitively demanding. Users faced multiple decision points with insufficient guidance, leading to confusion and early abandonment before they could commit to a ride.</div>
+    </div>
+    <div class="problem-card">
+      <div class="problem-num">FAULT_02 //</div>
+      <div class="problem-title">Ambiguous Location Data</div>
+      <div class="problem-body">Location information for Experience Centres was presented in a way that created confusion — distances were unclear, and the interface failed to surface the nearest available slot relative to the user's position.</div>
+    </div>
+    <div class="problem-card">
+      <div class="problem-num">FAULT_03 //</div>
+      <div class="problem-title">Mandatory EC Visits</div>
+      <div class="problem-body">Requiring in-person visits to Experience Centres was a structural barrier for users in areas with low EC density. The absence of a home test ride option eliminated a major segment of potential customers from completing the flow.</div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- KEY FINDINGS -->
+<div class="section" id="s3">
+  <div class="section-label">03 // INTELLIGENCE_REPORT</div>
+  <h2 class="section-heading">Key Findings</h2>
+
+  <div class="findings-grid">
+    <div class="finding-card">
+      <div class="finding-num">25%</div>
+      <div class="finding-label">DROP-OFF RATE RECORDED DURING THE INITIAL STAGES OF THE TEST RIDE BOOKING FLOW — BEFORE USERS EVEN REACHED DATE SELECTION</div>
+    </div>
+    <div class="finding-card">
+      <div class="finding-num">40%</div>
+      <div class="finding-label">OF USERS ABANDONED THE BOOKING PROCESS ENTIRELY DUE TO DIFFICULTIES LOCATING A NEARBY EXPERIENCE CENTRE</div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- OBJECTIVES -->
+<div class="section" id="s4">
+  <div class="section-label">04 // MISSION_OBJECTIVES</div>
+  <h2 class="section-heading">Objectives</h2>
+
+  <div class="objectives">
+    <div class="obj-pill">DOUBLE TRB→TRD CONVERSION (3% → 6%)</div>
+    <div class="obj-pill">IMPLEMENT HOME TEST RIDE (HTR) FEATURE</div>
+    <div class="obj-pill">SIMPLIFY BOOKING JOURNEY END-TO-END</div>
+    <div class="obj-pill">REDUCE LOCATION-RELATED ABANDONMENT</div>
+    <div class="obj-pill">IMPROVE USABILITY SCORE (3/10 → 8/10)</div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- DESIGN PROCESS -->
+<div class="section" id="s5">
+  <div class="section-label">05 // EXECUTION_LOG</div>
+  <h2 class="section-heading">Design Process</h2>
+
+  <div class="process-track">
+    <div class="process-step">
+      <div class="step-phase">PHASE_01 //</div>
+      <div>
+        <div class="step-title">Research</div>
+        <div class="step-body">Conducted user interviews and analysed website analytics to identify key pain points and user behaviours. Focused specifically on where in the funnel abandonment was occurring and why — mapping emotional friction alongside functional breakdowns.</div>
+      </div>
+    </div>
+    <div class="process-step">
+      <div class="step-phase">PHASE_02 //</div>
+      <div>
+        <div class="step-title">Iteration</div>
+        <div class="step-body">Developed wireframes and interactive prototypes focused on two parallel goals: simplifying the existing EC booking flow, and designing the entirely new HTR (Home Test Ride) path from scratch. Multiple flow variations were tested against each other.</div>
+      </div>
+    </div>
+    <div class="process-step">
+      <div class="step-phase">PHASE_03 //</div>
+      <div>
+        <div class="step-title">Cross-Functional Approach</div>
+        <div class="step-body">Worked closely with the development team to ensure seamless implementation and integration with backend systems. Coordination with the HTR logistics team shaped key decisions around date availability, service radius, and confirmation states.</div>
+      </div>
+    </div>
+    <div class="process-step">
+      <div class="step-phase">PHASE_04 //</div>
+      <div>
+        <div class="step-title">User Testing</div>
+        <div class="step-body">Conducted user testing with 15 participants across both the redesigned EC flow and the new HTR flow. Iterated based on feedback — particularly around location permission handling, date selection clarity, and the booking summary screen.</div>
+      </div>
+    </div>
+    <div class="process-step" style="border-bottom: none;">
+      <div class="step-phase">PHASE_05 //</div>
+      <div>
+        <div class="step-title">Phased Release</div>
+        <div class="step-body">Changes were deployed as a phased release — the EC flow improvements shipped first, establishing a baseline, followed by the HTR pilot in selected cities. This staged approach allowed both the design and engineering teams to monitor impact incrementally.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- BEFORE / AFTER -->
+<div class="section" id="s6">
+  <div class="section-label">06 // BEFORE_AFTER_COMPARISON</div>
+  <h2 class="section-heading">Before / After</h2>
+
+  <div class="ba-grid">
+    <div class="ba-panel">
+      <div class="ba-tag before">STATE_BEFORE //</div>
+      <div class="ba-title">The old booking flow</div>
+      <ul class="ba-list before">
+        <li>Single-page scroll form with all fields visible at once — overwhelming on mobile</li>
+        <li>No home test ride option — mandatory Experience Centre visit</li>
+        <li>Location selection forced before model selection, creating confusion</li>
+        <li>Ambiguous EC distance display — no proximity sorting</li>
+        <li>Date and time selection buried below fold without clear affordance</li>
+        <li>No booking summary before final confirmation</li>
+      </ul>
+    </div>
+    <div class="ba-panel" style="border-left: 1px solid var(--cyan-border);">
+      <div class="ba-tag after">STATE_AFTER //</div>
+      <div class="ba-title">The redesigned experience</div>
+      <ul class="ba-list after">
+        <li>Stepped flow: Location → Date → Time Slot → Details — one decision at a time</li>
+        <li>HTR as the primary option: "Test ride right here" surfaces immediately</li>
+        <li>Model selection moved to entry point — users commit to vehicle first</li>
+        <li>ECs sorted by proximity with distance labels; "Your location" pinned at top</li>
+        <li>Date/time presented as scannable chips — full week visible at a glance</li>
+        <li>Full booking summary shown before "Let's go" — reduces cancellations</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- RESULTS -->
+<div class="section" id="s7">
+  <div class="section-label">07 // MISSION_OUTCOME</div>
+  <h2 class="section-heading">Results</h2>
+
+  <div class="results-grid">
+    <div class="result-card">
+      <div class="result-index">METRIC_01 //</div>
+      <div class="result-num"><span>8</span>%</div>
+      <div class="result-label">TRB-TO-TRD CONVERSION RATE — EXCEEDING THE 6% TARGET SET AT MISSION START</div>
+      <div class="result-target">TARGET WAS 6% // EXCEEDED BY 33%</div>
+    </div>
+    <div class="result-card">
+      <div class="result-index">METRIC_02 //</div>
+      <div class="result-num"><span>500</span></div>
+      <div class="result-label">HOME TEST RIDES CONDUCTED DURING THE HTR PILOT PROGRAM — A BRAND NEW CONVERSION CHANNEL</div>
+      <div class="result-target">NEW FEATURE // BASELINE: 0</div>
+    </div>
+    <div class="result-card">
+      <div class="result-index">METRIC_03 //</div>
+      <div class="result-num"><span>8</span>/10</div>
+      <div class="result-label">USERS SUCCESSFULLY BOOKED A TEST RIDE IN USABILITY TESTING — UP FROM 3 OUT OF 10 PREVIOUSLY</div>
+      <div class="result-target">PREV. 3/10 // IMPROVEMENT: 167%</div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- CTA -->
+<div class="cta-section">
+  <div class="cta-bg"></div>
+  <div class="cta-label">END_OF_FILE // MISSION_04 COMPLETE</div>
+  <h2 class="cta-heading">View Next<br><span style="color:var(--cyan)">Mission</span></h2>
+  <a href="#" class="cta-btn">
+    <span>RETURN TO ARCHIVE →</span>
+  </a>
+</div>
+
+<!-- FOOTER -->
+<div class="footer-line">
+  <div class="footer-copy">© 2024 SIDHARTH PREMANAND // BUILT WITH MAVERICK ENERGY</div>
+  <div class="footer-copy">LINKEDIN // DRIBBBLE // LAYERS // EMAIL</div>
+</div>
+
+<script>
+  // CUSTOM CURSOR
+  const dot = document.getElementById('cursor-dot');
+  const ring = document.getElementById('cursor-ring');
+  let rx = 0, ry = 0;
+
+  document.addEventListener('mousemove', e => {
+    dot.style.left = e.clientX + 'px';
+    dot.style.top = e.clientY + 'px';
+    rx += (e.clientX - rx) * 0.12;
+    ry += (e.clientY - ry) * 0.12;
+    ring.style.left = rx + 'px';
+    ring.style.top = ry + 'px';
+  });
+
+  function animRing() {
+    ring.style.left = rx + 'px';
+    ring.style.top = ry + 'px';
+    requestAnimationFrame(animRing);
+  }
+  animRing();
+
+  document.addEventListener('mousedown', () => {
+    dot.style.transform = 'translate(-50%,-50%) scale(0.6)';
+    ring.style.transform = 'translate(-50%,-50%) scale(0.8)';
+  });
+  document.addEventListener('mouseup', () => {
+    dot.style.transform = 'translate(-50%,-50%) scale(1)';
+    ring.style.transform = 'translate(-50%,-50%) scale(1)';
+  });
+
+  // SCROLL REVEAL
+  const sections = document.querySelectorAll('.section');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach((e, i) => {
+      if (e.isIntersecting) {
+        setTimeout(() => e.target.classList.add('visible'), 80);
+      }
+    });
+  }, { threshold: 0.1 });
+  sections.forEach(s => observer.observe(s));
+
+  // RING LERP
+  document.addEventListener('mousemove', e => {
+    const target = e.target.closest('a, button, .problem-card, .result-card, .finding-card');
+    if (target) {
+      ring.style.width = '48px';
+      ring.style.height = '48px';
+      ring.style.borderColor = 'rgba(0,229,255,0.8)';
+    } else {
+      ring.style.width = '32px';
+      ring.style.height = '32px';
+      ring.style.borderColor = 'rgba(0,229,255,0.4)';
+    }
+  });
+</script>
+</body>
+</html>

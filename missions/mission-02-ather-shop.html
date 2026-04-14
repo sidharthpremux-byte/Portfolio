@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MISSION_02 // UX Revamp — Ather Shop — Sidharth Premanand</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;900&family=JetBrains+Mono:wght@300;400;500&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--cyan:#00E5FF;--cyan-dim:rgba(0,229,255,0.10);--cyan-border:rgba(0,229,255,0.2);--white:#F0F0F0;--grey:#777;--grey-dim:#2a2a2a;--bg:#070707;--bg-card:#0d0d0d;--bg-raised:#131313}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}::selection{background:var(--cyan);color:#000}*{cursor:none}html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--white);font-family:'Barlow',sans-serif;font-weight:300;overflow-x:hidden}
+#cursor-dot{position:fixed;width:7px;height:7px;background:var(--cyan);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%)}
+#cursor-ring{position:fixed;width:30px;height:30px;border:1px solid rgba(0,229,255,0.35);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:width 0.3s,height 0.3s,border-color 0.3s}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:1000;opacity:0.5}
+.scanlines{position:fixed;inset:0;pointer-events:none;z-index:999;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.03) 3px,rgba(0,0,0,0.03) 4px)}
+nav{position:fixed;top:0;left:0;right:0;padding:18px 56px;display:flex;justify-content:space-between;align-items:center;background:rgba(7,7,7,0.88);backdrop-filter:blur(16px);border-bottom:1px solid var(--cyan-border);z-index:500}
+.nav-brand{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:14px;letter-spacing:0.1em;color:var(--white);text-decoration:none;text-transform:uppercase}
+.nav-center{display:flex;gap:32px}
+.nav-link{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--grey);text-decoration:none;letter-spacing:0.1em;text-transform:uppercase;transition:color 0.2s}.nav-link:hover{color:var(--white)}
+.nav-right{display:flex;align-items:center;gap:20px}
+.nav-status{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--cyan);display:flex;align-items:center;gap:6px;letter-spacing:0.1em}
+.nav-status::before{content:'';width:5px;height:5px;background:var(--cyan);border-radius:50%;animation:blink 1.6s infinite}
+.nav-back{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--grey);text-decoration:none;letter-spacing:0.1em;transition:color 0.2s}.nav-back:hover{color:var(--cyan)}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.2}}
+.hero{min-height:100vh;display:flex;flex-direction:column;justify-content:flex-end;padding:0 80px 80px;position:relative;overflow:hidden}
+.hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 55% 50% at 70% 35%,rgba(200,255,0,0.04) 0%,transparent 65%),radial-gradient(ellipse 40% 60% at 25% 65%,rgba(0,229,255,0.04) 0%,transparent 60%)}
+.hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(0,229,255,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,0.025) 1px,transparent 1px);background-size:52px 52px}
+.hero-label{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--cyan);letter-spacing:0.22em;margin-bottom:20px;animation:fadeUp 0.8s ease forwards;opacity:0}
+.hero-title{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:clamp(60px,9vw,120px);line-height:0.88;letter-spacing:-0.025em;text-transform:uppercase;animation:fadeUp 0.8s 0.1s ease forwards;opacity:0}
+.hero-title .outline{-webkit-text-stroke:1.5px rgba(240,240,240,0.25);color:transparent}
+.hero-meta{margin-top:48px;display:grid;grid-template-columns:repeat(4,1fr);gap:1px;border:1px solid var(--cyan-border);background:var(--cyan-border);animation:fadeUp 0.8s 0.25s ease forwards;opacity:0}
+.meta-cell{background:var(--bg);padding:18px 22px}
+.meta-label{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--grey);letter-spacing:0.12em;margin-bottom:6px}
+.meta-value{font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:15px;color:var(--white)}.meta-value.accent{color:var(--cyan)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.divider{height:1px;margin:0 56px;background:linear-gradient(90deg,transparent,var(--cyan-border) 20%,var(--cyan-border) 80%,transparent)}
+.section{padding:100px 80px;opacity:0;transform:translateY(28px);transition:opacity 0.65s,transform 0.65s}
+.section.visible{opacity:1;transform:none}
+.section-label{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--cyan);letter-spacing:0.22em;margin-bottom:12px;display:flex;align-items:center;gap:12px;text-transform:uppercase}
+.section-label::after{content:'';flex:1;max-width:160px;height:1px;background:linear-gradient(90deg,var(--cyan-border),transparent)}
+.section-heading{font-family:'Barlow Condensed',sans-serif;font-weight:900;text-transform:uppercase;font-size:clamp(40px,5vw,72px);line-height:0.92;letter-spacing:-0.02em}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:72px;margin-top:52px;align-items:start}
+.body-text{font-size:16px;line-height:1.75;color:rgba(240,240,240,0.6);font-weight:300}
+.data-table{display:flex;flex-direction:column;gap:1px;border:1px solid var(--cyan-border);background:var(--cyan-border)}
+.data-row{background:var(--bg-card);padding:16px 22px;display:flex;justify-content:space-between;align-items:center}
+.data-key{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--grey);letter-spacing:0.12em}
+.data-val{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--cyan)}
+.problems{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;margin-top:52px;background:var(--cyan-border);border:1px solid var(--cyan-border)}
+.problem-card{background:var(--bg-card);padding:36px 28px;position:relative;transition:background 0.3s}
+.problem-card:hover{background:var(--bg-raised)}
+.problem-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--cyan);transform:scaleX(0);transform-origin:left;transition:transform 0.4s}
+.problem-card:hover::after{transform:scaleX(1)}
+.problem-num{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--cyan);letter-spacing:0.15em;margin-bottom:20px}
+.problem-title{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:20px;text-transform:uppercase;margin-bottom:12px}
+.problem-body{font-size:13px;line-height:1.7;color:rgba(240,240,240,0.5);font-weight:300}
+.stat-highlight{background:var(--bg-card);border:1px solid var(--cyan-border);padding:48px 44px;margin-top:52px;display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--cyan-border)}
+.stat-cell{background:var(--bg-card);padding:36px 32px}
+.stat-num{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:clamp(48px,6vw,80px);line-height:1;color:var(--cyan);letter-spacing:-0.03em;margin-bottom:10px}
+.stat-label{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--grey);letter-spacing:0.12em;line-height:1.6}
+.process-track{margin-top:52px;padding-left:28px;position:relative}
+.process-track::before{content:'';position:absolute;left:0;top:14px;bottom:14px;width:1px;background:linear-gradient(180deg,var(--cyan),var(--cyan-border) 70%,transparent)}
+.process-step{display:grid;grid-template-columns:180px 1fr;gap:44px;padding:32px 0;border-bottom:1px solid rgba(255,255,255,0.04);position:relative}
+.process-step:last-child{border-bottom:none}
+.process-step::before{content:'';position:absolute;left:-32px;top:38px;width:7px;height:7px;border:1px solid var(--cyan);border-radius:50%;background:var(--bg);transition:background 0.3s,box-shadow 0.3s}
+.process-step:hover::before{background:var(--cyan);box-shadow:0 0 10px var(--cyan)}
+.step-phase{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--cyan);letter-spacing:0.15em;padding-top:4px;text-transform:uppercase}
+.step-title{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:22px;text-transform:uppercase;margin-bottom:10px}
+.step-body{font-size:13px;line-height:1.75;color:rgba(240,240,240,0.5);font-weight:300}
+.ba-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;margin-top:52px;background:var(--cyan-border);border:1px solid var(--cyan-border)}
+.ba-panel{background:var(--bg-card);padding:40px 32px}
+.ba-tag{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.15em;padding:4px 10px;border:1px solid;margin-bottom:24px;text-transform:uppercase}
+.ba-tag.before{color:var(--grey);border-color:var(--grey-dim)}.ba-tag.after{color:var(--cyan);border-color:var(--cyan)}
+.ba-title{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:20px;text-transform:uppercase;margin-bottom:20px}
+.ba-list{list-style:none;display:flex;flex-direction:column;gap:10px}
+.ba-list li{font-size:13px;line-height:1.6;color:rgba(240,240,240,0.55);padding-left:18px;position:relative}
+.ba-list.before li::before{content:'—';position:absolute;left:0;color:var(--grey-dim)}.ba-list.after li::before{content:'→';position:absolute;left:0;color:var(--cyan)}
+.results-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;margin-top:52px;background:var(--cyan-border);border:1px solid var(--cyan-border)}
+.result-card{background:var(--bg-card);padding:48px 36px;position:relative;overflow:hidden;transition:background 0.3s}
+.result-card:hover{background:var(--bg-raised)}
+.result-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--cyan),transparent);opacity:0;transition:opacity 0.4s}
+.result-card:hover::before{opacity:1}
+.result-index{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--grey);letter-spacing:0.15em;margin-bottom:20px}
+.result-num{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:clamp(52px,6vw,84px);line-height:1;color:var(--white);letter-spacing:-0.03em;margin-bottom:12px}
+.result-num span{color:var(--cyan)}
+.result-label{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--grey);letter-spacing:0.1em;line-height:1.65}
+.result-target{margin-top:18px;font-family:'JetBrains Mono',monospace;font-size:9px;color:rgba(0,229,255,0.4);letter-spacing:0.1em}
+.cta-section{padding:112px 80px;text-align:center;position:relative}
+.cta-bg{position:absolute;inset:0;background-image:linear-gradient(rgba(0,229,255,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,0.02) 1px,transparent 1px);background-size:44px 44px;pointer-events:none}
+.cta-label{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--cyan);letter-spacing:0.22em;margin-bottom:18px;position:relative}
+.cta-heading{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:clamp(48px,7vw,96px);text-transform:uppercase;line-height:0.9;letter-spacing:-0.02em;margin-bottom:40px;position:relative}
+.cta-heading .outline{-webkit-text-stroke:1.5px rgba(240,240,240,0.25);color:transparent}
+.cta-btn{display:inline-flex;align-items:center;gap:12px;padding:14px 32px;background:transparent;border:1px solid var(--cyan);color:var(--cyan);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.15em;text-decoration:none;position:relative;overflow:hidden;transition:color 0.3s}
+.cta-btn::before{content:'';position:absolute;inset:0;background:var(--cyan);transform:translateX(-100%);transition:transform 0.35s}
+.cta-btn:hover::before{transform:translateX(0)}.cta-btn:hover{color:#000}.cta-btn span{position:relative;z-index:1}
+.footer-line{padding:22px 56px;border-top:1px solid rgba(255,255,255,0.04);display:flex;justify-content:space-between;align-items:center}
+.footer-copy{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--grey);letter-spacing:0.1em}
+.footer-links{display:flex;gap:24px}
+.footer-links a{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--grey);letter-spacing:0.1em;text-decoration:none;transition:color 0.2s}.footer-links a:hover{color:var(--cyan)}
+::-webkit-scrollbar{width:2px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--cyan-border)}
+</style>
+</head>
+<body>
+<div id="cursor-dot"></div><div id="cursor-ring"></div><div class="scanlines"></div>
+<nav>
+  <a href="index.html" class="nav-brand">Sidharth Premanand</a>
+  <div class="nav-center">
+    <a href="index.html" class="nav-link">Work</a>
+    <a href="index.html#about" class="nav-link">About</a>
+    <a href="index.html#contact" class="nav-link">Contact</a>
+  </div>
+  <div class="nav-right">
+    <div class="nav-status">SYSTEM_STATUS: ACTIVE</div>
+    <a href="index.html" class="nav-back">← BACK TO MISSIONS</a>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="hero-bg"></div><div class="hero-grid"></div>
+  <div class="hero-label">MISSION_02 // ATHER ENERGY // ECOMMERCE UX</div>
+  <h1 class="hero-title">
+    UX REVAMP —<br>
+    ATHER<br>
+    <span class="outline">SHOP</span>
+  </h1>
+  <div class="hero-meta">
+    <div class="meta-cell"><div class="meta-label">CLIENT //</div><div class="meta-value">Ather Energy</div></div>
+    <div class="meta-cell"><div class="meta-label">SCOPE //</div><div class="meta-value">Mobile UX Redesign</div></div>
+    <div class="meta-cell"><div class="meta-label">PLATFORM //</div><div class="meta-value">Mobile Web (85.9%)</div></div>
+    <div class="meta-cell"><div class="meta-label">STATUS //</div><div class="meta-value accent">MISSION COMPLETE</div></div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<div class="section" id="s1">
+  <div class="section-label">01 // MISSION_BRIEF</div>
+  <h2 class="section-heading">Context</h2>
+  <div class="two-col">
+    <div class="body-text">Ather Shop's desktop platform performed well, but the mobile experience — serving <strong style="color:var(--white)">85.9% of total traffic</strong> — was broken. Clunky navigation, absent search functionality, and a product detail page flow that hadn't been optimised for touch resulted in a catastrophically low 0.8% conversion rate.<br><br>The mission: close the performance gap between mobile and desktop, making the smartphone experience the driver of sales growth rather than the primary source of abandonment.</div>
+    <div class="data-table">
+      <div class="data-row"><span class="data-key">MOBILE TRAFFIC SHARE</span><span class="data-val">85.9%</span></div>
+      <div class="data-row"><span class="data-key">CONVERSION RATE (BEFORE)</span><span class="data-val">0.28%</span></div>
+      <div class="data-row"><span class="data-key">TARGET CONVERSION</span><span class="data-val">0.53%</span></div>
+      <div class="data-row"><span class="data-key">SESSION-TO-CART (BEFORE)</span><span class="data-val">2.40%</span></div>
+      <div class="data-row"><span class="data-key">TARGET SESSION-TO-CART</span><span class="data-val">4.00%</span></div>
+      <div class="data-row"><span class="data-key">SEARCH UTILISATION</span><span class="data-val">NEW FEATURE</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<div class="section" id="s2">
+  <div class="section-label">02 // WHAT_WE_NOTICED</div>
+  <h2 class="section-heading">Key Findings</h2>
+  <div class="problems">
+    <div class="problem-card">
+      <div class="problem-num">INSIGHT_01 //</div>
+      <div class="problem-title">No Search Capability</div>
+      <div class="problem-body">The search option was entirely absent from the shopping page, completely hindering users who arrived with a specific product in mind. Intent-driven traffic had no direct path to conversion.</div>
+    </div>
+    <div class="problem-card">
+      <div class="problem-num">INSIGHT_02 //</div>
+      <div class="problem-title">Single-Item Purchase Majority</div>
+      <div class="problem-body">Only 2.5% of users completed multi-item purchases. The vast majority purchased single items, suggesting cart abandonment was happening due to UX friction rather than low purchase intent.</div>
+    </div>
+    <div class="problem-card">
+      <div class="problem-num">INSIGHT_03 //</div>
+      <div class="problem-title">Navigation & Filter Issues</div>
+      <div class="problem-body">Category navigation, filters, and product sorting had usability issues that caused users to lose context mid-browse. The mobile UI didn't carry the same clarity as the desktop — it was a port, not a design.</div>
+    </div>
+  </div>
+
+  <div class="stat-highlight">
+    <div class="stat-cell">
+      <div class="stat-num">85.9%</div>
+      <div class="stat-label">OF SESSIONS CAME FROM MOBILE — THE MOST UNDERSERVED PLATFORM</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-num">0.8%</div>
+      <div class="stat-label">MOBILE CONVERSION RATE BEFORE THE REDESIGN — LESS THAN HALF OF DESKTOP</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-num">2.5%</div>
+      <div class="stat-label">MULTI-ITEM PURCHASE RATE — CART BEHAVIOUR WAS SUPPRESSED BY FRICTION</div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<div class="section" id="s3">
+  <div class="section-label">03 // EXECUTION_LOG</div>
+  <h2 class="section-heading">Design Process</h2>
+  <div class="process-track">
+    <div class="process-step">
+      <div class="step-phase">PHASE_01 //</div>
+      <div><div class="step-title">Research & Problem Discovery</div><div class="step-body">Analysed session recordings and funnel data to map exactly where mobile users were abandoning. Interviewed Ather Shop users to understand their mental models for product discovery — most arrived with a category in mind, not a specific product name.</div></div>
+    </div>
+    <div class="process-step">
+      <div class="step-phase">PHASE_02 //</div>
+      <div><div class="step-title">Information Architecture</div><div class="step-body">Restructured the navigation hierarchy for touch-first use — clear category entry points, persistent breadcrumb navigation, and a global search bar added to the top bar. The product listing page filter system was redesigned as scrollable chip selectors compatible with one-thumb operation.</div></div>
+    </div>
+    <div class="process-step">
+      <div class="step-phase">PHASE_03 //</div>
+      <div><div class="step-title">Product Detail Page Redesign</div><div class="step-body">The PDP received the most significant intervention: persistent sticky "Buy Now" CTA, horizontal image swipe gallery, inline size guidance with a "how to measure" expandable, and a clear discount display. The add-to-cart and buy-now actions were separated into distinct visual weight classes to reduce decision paralysis.</div></div>
+    </div>
+    <div class="process-step">
+      <div class="step-phase">PHASE_04 //</div>
+      <div><div class="step-title">Phased Release</div><div class="step-body">Released as a phased rollout — search and navigation improvements shipped in Phase 1 to establish a data baseline. The full PDP redesign followed in Phase 2, allowing clean attribution of metric changes to specific design interventions.</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<div class="section" id="s4">
+  <div class="section-label">04 // BEFORE_AFTER</div>
+  <h2 class="section-heading">Before / After</h2>
+  <div class="ba-grid">
+    <div class="ba-panel">
+      <div class="ba-tag before">STATE_BEFORE //</div>
+      <div class="ba-title">The old mobile shop</div>
+      <ul class="ba-list before">
+        <li>No search bar — zero path for intent-driven product discovery</li>
+        <li>Category browse-only — required navigating full product listings</li>
+        <li>Non-sticky CTA — "Buy Now" scrolled out of view on long PDPs</li>
+        <li>No size guide — users had to guess or leave to find guidance</li>
+        <li>Basic image gallery — no swipe support, arrows only</li>
+        <li>Filter chips required multiple taps — friction-heavy selections</li>
+      </ul>
+    </div>
+    <div class="ba-panel" style="border-left:1px solid var(--cyan-border)">
+      <div class="ba-tag after">STATE_AFTER //</div>
+      <div class="ba-title">The redesigned shop</div>
+      <ul class="ba-list after">
+        <li>Global search with category-scoped results and empty state guidance</li>
+        <li>Category tiles with product photography — visual-first navigation</li>
+        <li>Sticky bottom bar: price + "Add to cart" + "Buy now" always visible</li>
+        <li>Inline size chart with step-by-step measurement guide</li>
+        <li>Full-width swipeable image gallery — touch-native interaction</li>
+        <li>Horizontal scrolling filter chips — one-hand operation optimised</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<div class="section" id="s5">
+  <div class="section-label">05 // MISSION_OUTCOME</div>
+  <h2 class="section-heading">Results</h2>
+  <div class="results-grid">
+    <div class="result-card">
+      <div class="result-index">METRIC_01 //</div>
+      <div class="result-num"><span>0.39</span>%</div>
+      <div class="result-label">STORE CONVERSION RATE — UP FROM 0.28% BASELINE, MOVING TOWARD TARGET</div>
+      <div class="result-target">TARGET: 0.53% // IN PROGRESS</div>
+    </div>
+    <div class="result-card">
+      <div class="result-index">METRIC_02 //</div>
+      <div class="result-num"><span>0.63</span>%</div>
+      <div class="result-label">CONVERSION RATE AMONG USERS WHO USED THE NEW SEARCH FEATURE</div>
+      <div class="result-target">2.25× HIGHER THAN AVERAGE // VALIDATED</div>
+    </div>
+    <div class="result-card">
+      <div class="result-index">METRIC_03 //</div>
+      <div class="result-num"><span>6.18</span>%</div>
+      <div class="result-label">PRODUCT PAGE TO CHECKOUT CONVERSION — UP FROM 2.40% BEFORE REDESIGN</div>
+      <div class="result-target">TARGET WAS 4.00% // EXCEEDED BY 54%</div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<div class="cta-section">
+  <div class="cta-bg"></div>
+  <div class="cta-label">END_OF_FILE // MISSION_02 COMPLETE</div>
+  <h2 class="cta-heading">Next<br><span class="outline">Mission</span></h2>
+  <a href="mission-03-test-ride.html" class="cta-btn"><span>MISSION_03: TEST RIDE FLOW →</span></a>
+</div>
+
+<div class="footer-line">
+  <div class="footer-copy">© 2024 SIDHARTH PREMANAND // BUILT WITH MAVERICK ENERGY</div>
+  <div class="footer-links">
+    <a href="#">LINKEDIN</a><a href="#">DRIBBBLE</a><a href="#">LAYERS</a><a href="#">EMAIL</a>
+  </div>
+</div>
+
+<script>
+const dot=document.getElementById('cursor-dot'),ring=document.getElementById('cursor-ring');
+let rx=0,ry=0,mx=0,my=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;dot.style.left=e.clientX+'px';dot.style.top=e.clientY+'px'});
+(function l(){rx+=(mx-rx)*0.1;ry+=(my-ry)*0.1;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(l)})();
+document.addEventListener('mouseover',e=>{if(e.target.closest('a,button,.problem-card,.result-card')){ring.style.width='44px';ring.style.height='44px';ring.style.borderColor='rgba(0,229,255,0.7)'}else{ring.style.width='30px';ring.style.height='30px';ring.style.borderColor='rgba(0,229,255,0.35)'}});
+const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible')})},{threshold:0.1});
+document.querySelectorAll('.section').forEach(s=>obs.observe(s));
+</script>
+</body>
+</html>
