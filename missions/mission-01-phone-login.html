@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MISSION_01 // Phone Number Login — Sidharth Premanand</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;900&family=JetBrains+Mono:wght@300;400;500&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--cyan:#00E5FF;--cyan-dim:rgba(0,229,255,0.10);--cyan-border:rgba(0,229,255,0.2);--white:#F0F0F0;--grey:#777;--grey-dim:#2a2a2a;--bg:#070707;--bg-card:#0d0d0d;--bg-raised:#131313}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}::selection{background:var(--cyan);color:#000}*{cursor:none}html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--white);font-family:'Barlow',sans-serif;font-weight:300;overflow-x:hidden}
+#cursor-dot{position:fixed;width:7px;height:7px;background:var(--cyan);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%)}
+#cursor-ring{position:fixed;width:30px;height:30px;border:1px solid rgba(0,229,255,0.35);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:width 0.3s,height 0.3s,border-color 0.3s}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:1000;opacity:0.5}
+.scanlines{position:fixed;inset:0;pointer-events:none;z-index:999;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.03) 3px,rgba(0,0,0,0.03) 4px)}
+nav{position:fixed;top:0;left:0;right:0;padding:18px 56px;display:flex;justify-content:space-between;align-items:center;background:rgba(7,7,7,0.88);backdrop-filter:blur(16px);border-bottom:1px solid var(--cyan-border);z-index:500}
+.nav-brand{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:14px;letter-spacing:0.1em;color:var(--white);text-decoration:none;text-transform:uppercase}
+.nav-center{display:flex;gap:32px}
+.nav-link{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--grey);text-decoration:none;letter-spacing:0.1em;text-transform:uppercase;transition:color 0.2s}
+.nav-link:hover{color:var(--white)}
+.nav-right{display:flex;align-items:center;gap:20px}
+.nav-status{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--cyan);display:flex;align-items:center;gap:6px;letter-spacing:0.1em}
+.nav-status::before{content:'';width:5px;height:5px;background:var(--cyan);border-radius:50%;animation:blink 1.6s infinite}
+.nav-back{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--grey);text-decoration:none;letter-spacing:0.1em;text-transform:uppercase;transition:color 0.2s}
+.nav-back:hover{color:var(--cyan)}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.2}}
+.hero{min-height:100vh;display:flex;flex-direction:column;justify-content:flex-end;padding:0 80px 80px;position:relative;overflow:hidden}
+.hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 60% 50% at 70% 40%,rgba(0,229,255,0.06) 0%,transparent 65%),radial-gradient(ellipse 40% 60% at 20% 60%,rgba(0,100,200,0.04) 0%,transparent 60%)}
+.hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(0,229,255,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,0.025) 1px,transparent 1px);background-size:52px 52px}
+.hero-label{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--cyan);letter-spacing:0.22em;margin-bottom:20px;animation:fadeUp 0.8s ease forwards;opacity:0}
+.hero-title{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:clamp(64px,10vw,128px);line-height:0.88;letter-spacing:-0.025em;text-transform:uppercase;animation:fadeUp 0.8s 0.1s ease forwards;opacity:0;position:relative}
+.hero-title .outline{-webkit-text-stroke:1.5px rgba(240,240,240,0.25);color:transparent}
+.hero-title::after{content:attr(data-text);position:absolute;inset:0;color:var(--cyan);opacity:0.1;animation:glitch 10s ease-in-out infinite}
+.hero-meta{margin-top:48px;display:grid;grid-template-columns:repeat(4,1fr);gap:1px;border:1px solid var(--cyan-border);background:var(--cyan-border);animation:fadeUp 0.8s 0.25s ease forwards;opacity:0}
+.meta-cell{background:var(--bg);padding:18px 22px}
+.meta-label{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--grey);letter-spacing:0.12em;margin-bottom:6px}
+.meta-value{font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:15px;color:var(--white);letter-spacing:0.03em}
+.meta-value.accent{color:var(--cyan)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes glitch{0%,93%,100%{clip-path:none;transform:none}94%{clip-path:polygon(0 25%,100% 25%,100% 45%,0 45%);transform:translateX(-3px)}95%{clip-path:none;transform:none}97%{clip-path:polygon(0 62%,100% 62%,100% 79%,0 79%);transform:translateX(3px)}98%{clip-path:none;transform:none}}
+.divider{height:1px;margin:0 56px;background:linear-gradient(90deg,transparent,var(--cyan-border) 20%,var(--cyan-border) 80%,transparent)}
+.section{padding:100px 80px;opacity:0;transform:translateY(28px);transition:opacity 0.65s ease,transform 0.65s ease}
+.section.visible{opacity:1;transform:none}
+.section-label{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--cyan);letter-spacing:0.22em;margin-bottom:12px;display:flex;align-items:center;gap:12px;text-transform:uppercase}
+.section-label::after{content:'';flex:1;max-width:160px;height:1px;background:linear-gradient(90deg,var(--cyan-border),transparent)}
+.section-heading{font-family:'Barlow Condensed',sans-serif;font-weight:900;text-transform:uppercase;font-size:clamp(40px,5vw,72px);line-height:0.92;letter-spacing:-0.02em}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:72px;margin-top:52px;align-items:start}
+.body-text{font-size:16px;line-height:1.75;color:rgba(240,240,240,0.6);font-weight:300}
+.data-table{display:flex;flex-direction:column;gap:1px;border:1px solid var(--cyan-border);background:var(--cyan-border)}
+.data-row{background:var(--bg-card);padding:16px 22px;display:flex;justify-content:space-between;align-items:center}
+.data-key{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--grey);letter-spacing:0.12em}
+.data-val{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--cyan)}
+.problems{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;margin-top:52px;background:var(--cyan-border);border:1px solid var(--cyan-border)}
+.problem-card{background:var(--bg-card);padding:36px 28px;position:relative;transition:background 0.3s}
+.problem-card:hover{background:var(--bg-raised)}
+.problem-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--cyan);transform:scaleX(0);transform-origin:left;transition:transform 0.4s ease}
+.problem-card:hover::after{transform:scaleX(1)}
+.problem-num{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--cyan);letter-spacing:0.15em;margin-bottom:20px}
+.problem-title{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:20px;text-transform:uppercase;letter-spacing:0.03em;margin-bottom:12px}
+.problem-body{font-size:13px;line-height:1.7;color:rgba(240,240,240,0.5);font-weight:300}
+.findings-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;margin-top:52px;background:var(--cyan-border);border:1px solid var(--cyan-border)}
+.finding-card{background:var(--bg-card);padding:52px 40px;display:flex;flex-direction:column;gap:12px;transition:background 0.3s}
+.finding-card:hover{background:var(--bg-raised)}
+.finding-num{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:clamp(64px,9vw,108px);line-height:1;color:var(--cyan);letter-spacing:-0.03em}
+.finding-label{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--grey);letter-spacing:0.12em;line-height:1.65;max-width:300px}
+.user-quote{margin-top:52px;border:1px solid var(--cyan-border);background:var(--bg-card);padding:40px 44px;position:relative}
+.user-quote::before{content:'';position:absolute;top:0;left:0;bottom:0;width:2px;background:var(--cyan)}
+.quote-text{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:clamp(22px,3vw,36px);line-height:1.2;color:var(--white);margin-bottom:16px}
+.quote-attr{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--grey);letter-spacing:0.12em}
+.process-track{margin-top:52px;padding-left:28px;position:relative}
+.process-track::before{content:'';position:absolute;left:0;top:14px;bottom:14px;width:1px;background:linear-gradient(180deg,var(--cyan),var(--cyan-border) 70%,transparent)}
+.process-step{display:grid;grid-template-columns:180px 1fr;gap:44px;padding:32px 0;border-bottom:1px solid rgba(255,255,255,0.04);position:relative}
+.process-step:last-child{border-bottom:none}
+.process-step::before{content:'';position:absolute;left:-32px;top:38px;width:7px;height:7px;border:1px solid var(--cyan);border-radius:50%;background:var(--bg);transition:background 0.3s,box-shadow 0.3s}
+.process-step:hover::before{background:var(--cyan);box-shadow:0 0 10px var(--cyan)}
+.step-phase{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--cyan);letter-spacing:0.15em;padding-top:4px;text-transform:uppercase}
+.step-title{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:22px;text-transform:uppercase;letter-spacing:0.02em;margin-bottom:10px}
+.step-body{font-size:13px;line-height:1.75;color:rgba(240,240,240,0.5);font-weight:300}
+.ba-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;margin-top:52px;background:var(--cyan-border);border:1px solid var(--cyan-border)}
+.ba-panel{background:var(--bg-card);padding:40px 32px}
+.ba-tag{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.15em;padding:4px 10px;border:1px solid;margin-bottom:24px;text-transform:uppercase}
+.ba-tag.before{color:var(--grey);border-color:var(--grey-dim)}
+.ba-tag.after{color:var(--cyan);border-color:var(--cyan)}
+.ba-title{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:20px;text-transform:uppercase;margin-bottom:20px}
+.ba-list{list-style:none;display:flex;flex-direction:column;gap:10px}
+.ba-list li{font-size:13px;line-height:1.6;color:rgba(240,240,240,0.55);padding-left:18px;position:relative}
+.ba-list.before li::before{content:'—';position:absolute;left:0;color:var(--grey-dim)}
+.ba-list.after li::before{content:'→';position:absolute;left:0;color:var(--cyan)}
+.results-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;margin-top:52px;background:var(--cyan-border);border:1px solid var(--cyan-border)}
+.result-card{background:var(--bg-card);padding:48px 36px;position:relative;overflow:hidden;transition:background 0.3s}
+.result-card:hover{background:var(--bg-raised)}
+.result-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--cyan),transparent);opacity:0;transition:opacity 0.4s}
+.result-card:hover::before{opacity:1}
+.result-index{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--grey);letter-spacing:0.15em;margin-bottom:20px}
+.result-num{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:clamp(52px,6vw,84px);line-height:1;color:var(--white);letter-spacing:-0.03em;margin-bottom:12px}
+.result-num span{color:var(--cyan)}
+.result-label{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--grey);letter-spacing:0.1em;line-height:1.65}
+.result-target{margin-top:18px;font-family:'JetBrains Mono',monospace;font-size:9px;color:rgba(0,229,255,0.4);letter-spacing:0.1em}
+.cta-section{padding:112px 80px;text-align:center;position:relative}
+.cta-bg{position:absolute;inset:0;background-image:linear-gradient(rgba(0,229,255,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,0.02) 1px,transparent 1px);background-size:44px 44px;pointer-events:none}
+.cta-label{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--cyan);letter-spacing:0.22em;margin-bottom:18px;position:relative}
+.cta-heading{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:clamp(48px,7vw,96px);text-transform:uppercase;line-height:0.9;letter-spacing:-0.02em;margin-bottom:40px;position:relative}
+.cta-heading .outline{-webkit-text-stroke:1.5px rgba(240,240,240,0.25);color:transparent}
+.cta-btn{display:inline-flex;align-items:center;gap:12px;padding:14px 32px;background:transparent;border:1px solid var(--cyan);color:var(--cyan);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.15em;text-decoration:none;position:relative;overflow:hidden;transition:color 0.3s}
+.cta-btn::before{content:'';position:absolute;inset:0;background:var(--cyan);transform:translateX(-100%);transition:transform 0.35s ease}
+.cta-btn:hover::before{transform:translateX(0)}
+.cta-btn:hover{color:#000}
+.cta-btn span{position:relative;z-index:1}
+.footer-line{padding:22px 56px;border-top:1px solid rgba(255,255,255,0.04);display:flex;justify-content:space-between;align-items:center}
+.footer-copy{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--grey);letter-spacing:0.1em}
+.footer-links{display:flex;gap:24px}
+.footer-links a{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--grey);letter-spacing:0.1em;text-decoration:none;transition:color 0.2s}
+.footer-links a:hover{color:var(--cyan)}
+::-webkit-scrollbar{width:2px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--cyan-border)}
+</style>
+</head>
+<body>
+<div id="cursor-dot"></div><div id="cursor-ring"></div><div class="scanlines"></div>
+<nav>
+  <a href="index.html" class="nav-brand">Sidharth Premanand</a>
+  <div class="nav-center">
+    <a href="index.html" class="nav-link">Work</a>
+    <a href="index.html#about" class="nav-link">About</a>
+    <a href="index.html#contact" class="nav-link">Contact</a>
+  </div>
+  <div class="nav-right">
+    <div class="nav-status">SYSTEM_STATUS: ACTIVE</div>
+    <a href="index.html" class="nav-back">← BACK TO MISSIONS</a>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="hero-bg"></div><div class="hero-grid"></div>
+  <div class="hero-label">MISSION_01 // ATHER ENERGY // MOBILITY INTERFACE</div>
+  <h1 class="hero-title" data-text="PHONE NUMBER BASED LOGIN">
+    PHONE NUMBER<br>
+    BASED<br>
+    <span class="outline">LOGIN</span>
+  </h1>
+  <div class="hero-meta">
+    <div class="meta-cell"><div class="meta-label">CLIENT //</div><div class="meta-value">Ather Energy</div></div>
+    <div class="meta-cell"><div class="meta-label">SCOPE //</div><div class="meta-value">Auth UX Redesign</div></div>
+    <div class="meta-cell"><div class="meta-label">PLATFORM //</div><div class="meta-value">iOS + Android</div></div>
+    <div class="meta-cell"><div class="meta-label">STATUS //</div><div class="meta-value accent">MISSION COMPLETE</div></div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<div class="section" id="s1">
+  <div class="section-label">01 // MISSION_BRIEF</div>
+  <h2 class="section-heading">Context</h2>
+  <div class="two-col">
+    <div class="body-text">Ather Energy's app adoption in Tier 2 and 3 cities was severely hampered by a mandatory email-based login system. In regions with lower email penetration, this single friction point was enough to stop users from ever accessing the product.<br><br>Analysis revealed a <strong style="color:var(--white)">68% abandonment rate</strong> directly attributed to the email login requirement, and social login complexity contributed to a 42% overall decrease in app adoption in these regions. The fix wasn't more onboarding — it was removing the barrier entirely.</div>
+    <div class="data-table">
+      <div class="data-row"><span class="data-key">LOGIN SUCCESS RATE (BEFORE)</span><span class="data-val">32%</span></div>
+      <div class="data-row"><span class="data-key">TARGET SUCCESS RATE</span><span class="data-val">65%</span></div>
+      <div class="data-row"><span class="data-key">ABANDONMENT DUE TO EMAIL</span><span class="data-val">68%</span></div>
+      <div class="data-row"><span class="data-key">ADOPTION DROP (TIER 2/3)</span><span class="data-val">42%</span></div>
+      <div class="data-row"><span class="data-key">DAY-1 RETENTION (BEFORE)</span><span class="data-val">28%</span></div>
+      <div class="data-row"><span class="data-key">CSAT SCORE (BEFORE)</span><span class="data-val">3.1 / 5</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<div class="section" id="s2">
+  <div class="section-label">02 // PROBLEM_STATEMENT</div>
+  <h2 class="section-heading">What Was Broken</h2>
+  <div class="problems">
+    <div class="problem-card">
+      <div class="problem-num">FAULT_01 //</div>
+      <div class="problem-title">Email as Mandatory Gate</div>
+      <div class="problem-body">In Tier 2 and 3 markets, email penetration is significantly lower than smartphone penetration. Forcing email-based login excluded a massive, underserved user base before they ever experienced the product.</div>
+    </div>
+    <div class="problem-card">
+      <div class="problem-num">FAULT_02 //</div>
+      <div class="problem-title">Social Login Complexity</div>
+      <div class="problem-body">Google and Apple sign-in options introduced their own confusion — account linking failures, mismatched emails, and app permission dialogs created unexpected drop-off even among users who attempted social login.</div>
+    </div>
+    <div class="problem-card">
+      <div class="problem-num">FAULT_03 //</div>
+      <div class="problem-title">Duplicate Account Chaos</div>
+      <div class="problem-body">Multiple email IDs linked to the same phone number created a fragmented account ecosystem. Users encountered verification loops and confusing state management that made login feel unreliable and broken.</div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<div class="section" id="s3">
+  <div class="section-label">03 // USER_INTELLIGENCE</div>
+  <h2 class="section-heading">The Signal</h2>
+  <div class="user-quote">
+    <div class="quote-text">"I don't use email. Why can't I just use my phone?"</div>
+    <div class="quote-attr">PRIYA, INDORE // TIER 3 CITY USER // DIRECT FEEDBACK SESSION</div>
+  </div>
+  <div class="findings-grid" style="margin-top:1px">
+    <div class="finding-card">
+      <div class="finding-num">68%</div>
+      <div class="finding-label">ABANDONMENT RATE DIRECTLY ATTRIBUTED TO THE EMAIL-BASED LOGIN REQUIREMENT IN TIER 2/3 CITIES</div>
+    </div>
+    <div class="finding-card">
+      <div class="finding-num">42%</div>
+      <div class="finding-label">DECREASE IN OVERALL APP ADOPTION IN TIER 2/3 REGIONS DUE TO SOCIAL LOGIN COMPLEXITY</div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<div class="section" id="s4">
+  <div class="section-label">04 // EXECUTION_LOG</div>
+  <h2 class="section-heading">Design Process</h2>
+  <div class="process-track">
+    <div class="process-step">
+      <div class="step-phase">PHASE_01 //</div>
+      <div><div class="step-title">Research & Data Analysis</div><div class="step-body">Mapped the full login funnel using analytics to identify exact drop-off points. Conducted field interviews in Tier 2/3 cities to understand the relationship users had with their phone numbers vs. email addresses. The insight was clear: phone was identity, email was not.</div></div>
+    </div>
+    <div class="process-step">
+      <div class="step-phase">PHASE_02 //</div>
+      <div><div class="step-title">System Architecture</div><div class="step-body">Designed the logic for handling duplicate accounts — multiple email IDs linked to the same phone number. The "Keep one, sweep the rest" resolution flow was a critical edge case that required clean UX writing and a transparent data-handling approach to maintain user trust.</div></div>
+    </div>
+    <div class="process-step">
+      <div class="step-phase">PHASE_03 //</div>
+      <div><div class="step-title">UI Design & Prototyping</div><div class="step-body">Designed the phone number entry screen with country code selection, OTP verification, and all the associated edge states — expired OTPs, poor network conditions, success confirmations. Each state was prototyped and tested for friction.</div></div>
+    </div>
+    <div class="process-step">
+      <div class="step-phase">PHASE_04 //</div>
+      <div><div class="step-title">Phased Rollout</div><div class="step-body">Phone-based login was strategically positioned as the primary authentication method — not an alternative. The email option remained as a secondary path for existing users. Phased release allowed monitoring of adoption curves without disrupting the existing user base.</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<div class="section" id="s5">
+  <div class="section-label">05 // BEFORE_AFTER</div>
+  <h2 class="section-heading">Before / After</h2>
+  <div class="ba-grid">
+    <div class="ba-panel">
+      <div class="ba-tag before">STATE_BEFORE //</div>
+      <div class="ba-title">The old auth flow</div>
+      <ul class="ba-list before">
+        <li>Email-only as primary login — no phone option at entry</li>
+        <li>Social login as secondary path — account linking failures common</li>
+        <li>No OTP-based verification — password-dependent</li>
+        <li>Duplicate accounts created silently — users unaware</li>
+        <li>No duplicate resolution flow for phone-linked emails</li>
+        <li>Generic error states with no user-friendly guidance</li>
+      </ul>
+    </div>
+    <div class="ba-panel" style="border-left:1px solid var(--cyan-border)">
+      <div class="ba-tag after">STATE_AFTER //</div>
+      <div class="ba-title">The redesigned auth</div>
+      <ul class="ba-list after">
+        <li>Phone number as primary login — email demoted to secondary</li>
+        <li>5-digit OTP sent to phone — instant, no password required</li>
+        <li>Country code selector with search — supports global users</li>
+        <li>"Keep one, sweep the rest" — transparent duplicate resolution</li>
+        <li>Retry timer with clear countdown — reduces user confusion</li>
+        <li>Contextual success states — "Verification successful" banner on dashboard</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<div class="section" id="s6">
+  <div class="section-label">06 // MISSION_OUTCOME</div>
+  <h2 class="section-heading">Results</h2>
+  <div class="results-grid">
+    <div class="result-card">
+      <div class="result-index">METRIC_01 //</div>
+      <div class="result-num"><span>68</span>%</div>
+      <div class="result-label">LOGIN SUCCESS RATE — MORE THAN DOUBLED FROM THE 32% BASELINE</div>
+      <div class="result-target">TARGET WAS 65% // EXCEEDED</div>
+    </div>
+    <div class="result-card">
+      <div class="result-index">METRIC_02 //</div>
+      <div class="result-num"><span>56</span>×</div>
+      <div class="result-label">DAY-1 RETENTION IMPROVEMENT IN TIER 2/3 CITIES FOLLOWING LAUNCH</div>
+      <div class="result-target">PREV: 28% TARGET // EXCEEDED</div>
+    </div>
+    <div class="result-card">
+      <div class="result-index">METRIC_03 //</div>
+      <div class="result-num"><span>4.6</span></div>
+      <div class="result-label">OUT OF 5 CSAT SCORE — UP FROM 3.1 BEFORE THE REDESIGN</div>
+      <div class="result-target">TARGET WAS 4.5 // EXCEEDED</div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<div class="cta-section">
+  <div class="cta-bg"></div>
+  <div class="cta-label">END_OF_FILE // MISSION_01 COMPLETE</div>
+  <h2 class="cta-heading">Next<br><span class="outline">Mission</span></h2>
+  <a href="mission-02-ather-shop.html" class="cta-btn"><span>MISSION_02: ATHER SHOP →</span></a>
+</div>
+
+<div class="footer-line">
+  <div class="footer-copy">© 2024 SIDHARTH PREMANAND // BUILT WITH MAVERICK ENERGY</div>
+  <div class="footer-links">
+    <a href="#">LINKEDIN</a><a href="#">DRIBBBLE</a><a href="#">LAYERS</a><a href="#">EMAIL</a>
+  </div>
+</div>
+
+<script>
+const dot=document.getElementById('cursor-dot'),ring=document.getElementById('cursor-ring');
+let rx=0,ry=0,mx=0,my=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;dot.style.left=e.clientX+'px';dot.style.top=e.clientY+'px'});
+(function l(){rx+=(mx-rx)*0.1;ry+=(my-ry)*0.1;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(l)})();
+document.addEventListener('mouseover',e=>{if(e.target.closest('a,button,.problem-card,.result-card,.finding-card')){ring.style.width='44px';ring.style.height='44px';ring.style.borderColor='rgba(0,229,255,0.7)'}else{ring.style.width='30px';ring.style.height='30px';ring.style.borderColor='rgba(0,229,255,0.35)'}});
+const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible')})},{threshold:0.1});
+document.querySelectorAll('.section').forEach(s=>obs.observe(s));
+</script>
+</body>
+</html>
